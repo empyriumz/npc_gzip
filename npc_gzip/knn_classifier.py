@@ -1,4 +1,4 @@
-from typing import Optional, Sequence, Union
+from typing import Optional, Sequence
 
 import numpy as np
 from tqdm import tqdm
@@ -318,7 +318,7 @@ class KnnClassifier:
         training_inputs, training_labels, randomly_sampled_indices = self.sample_data(
             sampling_percentage
         )
-
+        assert isinstance(training_inputs, np.ndarray)
         samples: list = []
         combined: list = []
         for sample in tqdm(x, desc="Compressing input..."):
@@ -331,7 +331,6 @@ class KnnClassifier:
         compressed_samples: np.ndarray = np.array(samples)
         compressed_combined: np.ndarray = np.array(combined)
 
-        assert isinstance(training_inputs, np.ndarray)
         assert isinstance(compressed_samples, np.ndarray)
         assert isinstance(compressed_combined, np.ndarray)
         assert isinstance(self.compressed_training_inputs, np.ndarray)
@@ -347,7 +346,7 @@ class KnnClassifier:
         # top matching training samples and labels by
         # minimum distance.
 
-        # get indicies of minimum top_k distances.
+        # get indices of minimum top_k distances.
         minimum_distance_indices = np.argpartition(distances, top_k)[:, :top_k]
 
         similar_samples: np.ndarray = training_inputs[minimum_distance_indices]
