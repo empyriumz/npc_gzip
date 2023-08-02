@@ -56,7 +56,8 @@ class KnnClassifier:
                         function_name="KnnGzip.__init__",
                     )
 
-            self.training_inputs: np.ndarray = np.array(training_inputs).reshape(-1)
+            # self.training_inputs: np.ndarray = np.array(training_inputs).reshape(-1)
+            self.training_inputs: np.ndarray = np.array(training_inputs)
             self.training_labels: np.ndarray = np.array(training_labels).reshape(-1)
 
         elif isinstance(training_inputs, np.ndarray) or isinstance(
@@ -73,7 +74,7 @@ class KnnClassifier:
                 else training_labels
             )
 
-            self.training_inputs = self.training_inputs.reshape(-1)
+            # self.training_inputs = self.training_inputs.reshape(-1)
             self.training_labels = self.training_labels.reshape(-1)
 
         else:
@@ -84,7 +85,7 @@ class KnnClassifier:
             )
 
         assert (
-            self.training_inputs.shape == self.training_labels.shape
+            self.training_inputs.shape[0] == self.training_labels.shape[0]
         ), f"""
         Training Inputs and Labels did not maintain their 
         shape during the conversion from lists to numpy arrays.
@@ -194,9 +195,9 @@ class KnnClassifier:
                         [self.compressed_training_inputs.shape[0]].
         """
 
-        assert isinstance(
-            x, str
-        ), f"Non-string was passed to self._compress_sample: {x}"
+        # assert isinstance(
+        #     x, str
+        # ), f"Non-string was passed to self._compress_sample: {x}"
 
         if training_inputs is None:
             training_inputs = self.training_inputs
@@ -206,18 +207,18 @@ class KnnClassifier:
             compressed_input_length for _ in range(training_inputs.shape[0])
         ]
         compressed_input: np.ndarray = np.array(compressed_input).reshape(-1)
-        assert compressed_input.shape == training_inputs.shape
-
+        assert len(compressed_input) == len(training_inputs)
         combined: list = []
         for training_sample in training_inputs:
-            train_and_x: str = concatenate_with_space(training_sample, x)
+            # train_and_x: str = concatenate_with_space(training_sample, x)
+            train_and_x: np.ndarray = np.concatenate((training_sample, x))
             combined_compressed: int = self.compressor.get_compressed_length(
                 train_and_x
             )
             combined.append(combined_compressed)
 
         combined: np.ndarray = np.array(combined).reshape(-1)
-        assert training_inputs.shape == compressed_input.shape == combined.shape
+        assert len(training_inputs) == len(compressed_input) == len(combined)
 
         return (compressed_input, combined)
 
@@ -305,7 +306,7 @@ class KnnClassifier:
 
         assert top_k > 0, f"top_k ({top_k}) must be greater than zero."
 
-        x: np.ndarray = x.reshape(-1)
+        # x: np.ndarray = x.reshape(-1)
         assert (
             top_k <= x.shape[0]
         ), f"""
@@ -331,9 +332,6 @@ class KnnClassifier:
         compressed_samples: np.ndarray = np.array(samples)
         compressed_combined: np.ndarray = np.array(combined)
 
-        assert isinstance(compressed_samples, np.ndarray)
-        assert isinstance(compressed_combined, np.ndarray)
-        assert isinstance(self.compressed_training_inputs, np.ndarray)
 
         compressed_training: np.ndarray = self.compressed_training_inputs[
             randomly_sampled_indices

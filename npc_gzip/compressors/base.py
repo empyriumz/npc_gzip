@@ -68,7 +68,7 @@ class BaseCompressor:
             bytes: The compressed bytes representation of `x`.
         """
 
-        x: bytes = x.encode("utf-8")
+        # x: bytes = x.encode("utf-8")
         compressed: bytes = self.compressor.compress(x)
         return compressed
 
