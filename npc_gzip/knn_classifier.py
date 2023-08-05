@@ -27,14 +27,19 @@ class KnnClassifier:
     >>> training_labels = [random.randint(0, 1) for _ in range(len(training_data))]
     >>> assert len(training_data) == len(training_labels)
 
-    >>> model = KnnClassifier(compressor=GZipCompressor(), training_inputs=training_data, training_labels=training_labels, distance_metric="ncd")
+    >>> model = KnnClassifier(
+    ...     compressor=GZipCompressor(),
+    ...     training_inputs=training_data,
+    ...     training_labels=training_labels,
+    ...     distance_metric="ncd",
+    ... )
 
     >>> test = np.array(["hey", "you are a real pain in my ass", "go away please"])
 
     >>> top_k = 1
     >>> distances, labels, similar_samples = model.predict(test, top_k=top_k)
     >>> assert distances.shape == (test.shape[0], len(training_data))
-    >>> assert labels.shape == similar_samples.shape
+    >>> assert labels.shape == (test.shape[0], )
     >>> assert distances.shape[0] == labels.shape[0] == similar_samples.shape[0]
     """
 
@@ -86,10 +91,10 @@ class KnnClassifier:
         assert (
             self.training_inputs.shape == self.training_labels.shape
         ), f"""
-        Training Inputs and Labels did not maintain their 
+        Training Inputs and Labels did not maintain their
         shape during the conversion from lists to numpy arrays.
         This is most likely a bug in the numpy package:
-        
+
         self.training_inputs.shape: {self.training_inputs.shape}
         self.training_labels.shape: {self.training_labels.shape}
         """
@@ -309,9 +314,9 @@ class KnnClassifier:
         assert (
             top_k <= x.shape[0]
         ), f"""
-        top_k ({top_k}) must be less or equal to than the number of 
+        top_k ({top_k}) must be less or equal to than the number of
         samples provided to be predicted on ({x.shape[0]})
-        
+
         """
 
         # sample training inputs and labels
@@ -351,5 +356,8 @@ class KnnClassifier:
 
         similar_samples: np.ndarray = training_inputs[minimum_distance_indices]
         labels: np.ndarray = training_labels[minimum_distance_indices]
+        predicted_labels = np.apply_along_axis(
+            lambda x: np.bincount(x).argmax(), axis=1, arr=labels
+        )
 
-        return distances, labels, similar_samples
+        return distances, predicted_labels, similar_samples

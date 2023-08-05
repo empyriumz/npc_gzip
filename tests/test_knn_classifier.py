@@ -7,10 +7,8 @@ from npc_gzip.compressors.base import BaseCompressor
 from npc_gzip.compressors.bz2_compressor import Bz2Compressor
 from npc_gzip.compressors.gzip_compressor import GZipCompressor
 from npc_gzip.compressors.lzma_compressor import LzmaCompressor
-from npc_gzip.distance import Distance
 from npc_gzip.exceptions import (
     InputLabelEqualLengthException,
-    InvalidObjectTypeException,
     UnsupportedDistanceMetricException,
 )
 from npc_gzip.knn_classifier import KnnClassifier
@@ -112,19 +110,19 @@ class TestKnnClassifier:
         )
 
         assert distance.shape == (
-            len([self.sample_input]),
+            1,
             self.model.training_inputs.shape[0],
         )
-        assert labels.shape == (top_k, len([self.sample_input]))
-        assert similar_samples.shape == (top_k, len([self.sample_input]))
+        assert labels.shape == (1,)
+        assert similar_samples.shape == (top_k, 1)
 
-        test_set_size = random.randint(1, 50)
+        test_set_size = random.randint(2, 50)
         test_set = [self.sample_input for _ in range(test_set_size)]
         top_k = 2
         (distance, labels, similar_samples) = self.model.predict(test_set, top_k)
 
         assert distance.shape == (test_set_size, self.model.training_inputs.shape[0])
-        assert labels.shape == (test_set_size, top_k)
+        assert labels.shape == (test_set_size,)
         assert similar_samples.shape == (test_set_size, top_k)
 
     def test_negative_top_k(self) -> None:
